@@ -17,15 +17,24 @@ class Table:
         self.title = kwargs["title"]
         self.metadata = kwargs
 
+    def get_basic_metadata(self) -> dict:
+        m = self.metadata.copy()
+        extra_keys = ["columns", "views", "columnsById"]
+        return {k: v for k, v in m.items() if not k in extra_keys}
+
     def get_number_of_records(self) -> int:
         r = self.noco_db.call_noco(
             path=f"tables/{self.table_id}/records/count")
         return r.json()["count"]
 
-    def get_columns(self) -> list[Column]:
+    def get_columns(self, include_system: bool = True) -> list[Column]:
         r = self.noco_db.call_noco(
             path=f"meta/tables/{self.table_id}")
-        return [Column(**f) for f in r.json()["columns"]]
+        cols = [Column(**f) for f in r.json()["columns"]]
+        if include_system:
+            return cols
+        else:
+            return [c for c in cols if not c.system and not c.primary_key]
 
     def get_columns_hash(self) -> str:
         r = self.noco_db.call_noco(
@@ -37,6 +46,18 @@ class Table:
             return next((r for r in self.get_columns() if r.title == title))
         except StopIteration:
             raise Exception(f"Column with title {title} not found!")
+
+    def create_column(self, column_name: str,
+                      title: str, uidt: str = "SingleLineText",
+                      **kwargs) -> Column:
+        kwargs["column_name"] = column_name
+        kwargs["title"] = title
+        kwargs["uidt"] = uidt
+
+        r = self.noco_db.call_noco(path=f"meta/tables/{self.table_id}/columns",
+                                   method="POST",
+                                   json=kwargs)
+        return self.get_column_by_title(title=title)
 
     def duplicate(self,
                   exclude_data: bool = True,

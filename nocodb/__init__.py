@@ -4,6 +4,8 @@ from urllib.parse import urlsplit, urljoin
 
 
 import logging
+
+from nocodb.Column import Column
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
@@ -87,6 +89,11 @@ class NocoDB:
                            method="POST",
                            json=kwargs)
         return self.get_base(base_id=r.json()["id"])
+
+
+    def get_column(self, column_id:str) -> Column:
+        r = self.call_noco(path=f"meta/columns/{column_id}")
+        return Column(**r.json())
 
 
 

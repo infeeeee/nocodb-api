@@ -3,6 +3,7 @@ if TYPE_CHECKING:
     from nocodb import NocoDB
 
 
+from nocodb.Column import Column
 from nocodb.Table import Table
 
 
@@ -60,9 +61,16 @@ class Base:
             raise Exception(f"Table with name {title} not found!")
 
     def create_table(self, table_name: str,
-                     columns: list[dict] = [{"column_name": "title"}], **kwargs) -> Table:
+                      columns: list[dict] = [], add_default_columns: bool = True, 
+                     **kwargs) -> Table:
         kwargs["table_name"] = table_name
-        kwargs["columns"] = columns
+        if not columns:
+            kwargs["columns"] = Column.get_id_metadata()
+        elif add_default_columns:
+            columns.extend(Column.get_id_metadata())
+            kwargs["columns"] = columns  
+        else:
+            kwargs["columns"] = columns
 
         r = self.noco_db.call_noco(path=f"meta/bases/{self.base_id}/tables",
                                    method="POST",
