@@ -1,0 +1,30 @@
+[project]
+name = "py-nocodb"
+version = "0.0.1"
+description = "Python client for NocoDB API v2"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "infeeeee", email = "gyetpet@mailbox.org" }]
+maintainers = [{ name = "infeeeee", email = "gyetpet@mailbox.org" }]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+]
+
+dependencies = ["requests"]
+
+
+[project.urls]
+homepage = "https://github.com/infeeeee/py-nocodb"
+documentation = "https://github.com/infeeeee/py-nocodb"
+repository = "https://github.com/infeeeee/py-nocodb"
+changelog = "https://github.com/infeeeee/py-nocodb"
+
+
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[tool.setuptools]
+packages = ["nocodb"]
