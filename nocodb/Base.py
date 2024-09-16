@@ -61,8 +61,10 @@ class Base:
             raise Exception(f"Table with name {title} not found!")
 
     def create_table(self, table_name: str,
-                      columns: list[dict] = [], add_default_columns: bool = True, 
+                      columns: list[dict] = None, add_default_columns: bool = True,
                      **kwargs) -> Table:
+        if columns is None:
+            columns = []
         kwargs["table_name"] = table_name
         if not columns:
             kwargs["columns"] = Column.get_id_metadata()
