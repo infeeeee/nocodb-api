@@ -73,9 +73,8 @@ class Table:
                                    method="DELETE")
         return r.json()
 
-    def get_records(self, params: dict = None) -> list[Record]:
-        if params is None:
-            params = {}
+    def get_records(self, params: dict | None = None) -> list[Record]:
+        params = params or {}
 
         if any([p in params for p in ["offset", "limit"]]):
             get_all_records = False
