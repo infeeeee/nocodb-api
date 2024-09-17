@@ -1,3 +1,4 @@
+from __future__ import annotations
 class Column:
     def __init__(self, **kwargs) -> None:
         self.title = kwargs["title"]

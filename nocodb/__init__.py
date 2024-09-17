@@ -1,3 +1,4 @@
+from __future__ import annotations
 import requests
 from urllib.parse import urlsplit, urljoin
 import logging
@@ -84,7 +85,7 @@ class NocoDB:
 
     def create_base(self, title:str, **kwargs) -> Base:
         kwargs["title"] = title
-        
+
         r = self.call_noco(path="meta/bases",
                            method="POST",
                            json=kwargs)
@@ -106,4 +107,3 @@ class NocoDB:
             return self.__app_info["isCloud"]
         else:
             return self.get_app_info()["isCloud"]
-
