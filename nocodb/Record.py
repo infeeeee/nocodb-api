@@ -14,16 +14,16 @@ class Record:
         self.metadata = kwargs
 
     def link_record(self, column: Column, link_record: "Record") -> bool:
-        path = f"tables/{self.table.table_id}/links/{
-            column.column_id}/records/{self.record_id}"
+        path = (f"tables/{self.table.table_id}/links/" +
+                f"{column.column_id}/records/{self.record_id}")
         r = self.noco_db.call_noco(path=path,
                                    method="POST", json={"Id": link_record.record_id})
 
         return r.json()
 
     def link_records(self, column: Column, link_records: list["Record"]) -> bool:
-        path = f"tables/{self.table.table_id}/links/{
-            column.column_id}/records/{self.record_id}"
+        path = (f"tables/{self.table.table_id}/links/" +
+                f"{column.column_id}/records/{self.record_id}")
         r = self.noco_db.call_noco(path=path,
                                    method="POST", json=[{"Id": l.record_id} for l in link_records])
 

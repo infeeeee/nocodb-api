@@ -1,4 +1,3 @@
-
 from nocodb.Record import Record
 from nocodb.Column import Column
 
@@ -74,7 +73,8 @@ class Table:
                                    method="DELETE")
         return r.json()
 
-    def get_records(self, params: dict = {}) -> list[Record]:
+    def get_records(self, params: dict | None = None) -> list[Record]:
+        params = params or {}
 
         if any([p in params for p in ["offset", "limit"]]):
             get_all_records = False
@@ -85,9 +85,7 @@ class Table:
             params["limit"] = 1000
 
         records = []
-
         while True:
-
             r = self.noco_db.call_noco(
                 path=f"tables/{self.table_id}/records", params=params)
 
