@@ -8,9 +8,9 @@ license = { file = "LICENSE" }
 authors = [{ name = "infeeeee", email = "gyetpet@mailbox.org" }]
 maintainers = [{ name = "infeeeee", email = "gyetpet@mailbox.org" }]
 classifiers = [
-  "Development Status :: 3 - Alpha",
-  "Programming Language :: Python",
-  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
 ]
 
 dependencies = ["requests"]

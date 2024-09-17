@@ -1,9 +1,15 @@
+from __future__ import annotations
+import re
 from nocodb.Record import Record
 from nocodb.Column import Column
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from nocodb.Base import Base
+
+import logging
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class Table:
@@ -65,12 +71,27 @@ class Table:
                                    method="POST",
                                    json={"excludeData": exclude_data,
                                          "excludeViews": exclude_views})
+        logger.debug(f"Table {self.title} duplicated")
+        return
 
         # Bug in noco API, wrong Id response
+
+    def get_duplicates(self) -> list["Table"]:
+        duplicates = {}
+        for t in self.base.get_tables():
+            if re.match(f"^{self.title} copy(_\\d+)?$", t.title):
+                nr = re.findall("_(\\d+)", t.title)
+                if nr:
+                    duplicates[int(nr[0])] = t
+                else:
+                    duplicates[0] = t
+
+        return list(dict(sorted(duplicates.items(), reverse=True)).values())
 
     def delete(self) -> bool:
         r = self.noco_db.call_noco(path=f"meta/tables/{self.table_id}",
                                    method="DELETE")
+        logger.debug(f"Table {self.title} deleted")
         return r.json()
 
     def get_records(self, params: dict | None = None) -> list[Record]:
@@ -85,7 +106,9 @@ class Table:
             params["limit"] = 1000
 
         records = []
+
         while True:
+
             r = self.noco_db.call_noco(
                 path=f"tables/{self.table_id}/records", params=params)
 

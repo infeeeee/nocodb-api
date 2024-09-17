@@ -3,4 +3,4 @@
 *.egg-info
 __pycache__
 testrun.py
-test_config.json
+test_config.json*

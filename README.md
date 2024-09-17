@@ -20,7 +20,13 @@ table = base.get_table_by_title("Sample Views")
 
 ## Development
 
-```
+```shell
 python -m venv .venv
 . ./.venv/bin/activate
+```
+
+### Tests in Docker
+
+```shell
+docker run --rm -it $(docker build -q -f tests/Dockerfile .)
 ```

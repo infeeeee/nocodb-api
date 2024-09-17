@@ -1,19 +1,19 @@
-from nocodb.Base import Base
 import requests
 from urllib.parse import urlsplit, urljoin
-
-
 import logging
 
+from nocodb.Base import Base
 from nocodb.Column import Column
+
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logger.addHandler(logging.NullHandler())
 
 
 API_PATH_BASE = "api/v2"
 
 
 class NocoDB:
+    __app_info: dict
 
     def __init__(self,
                  url: str,
@@ -96,4 +96,14 @@ class NocoDB:
         return Column(**r.json())
 
 
+    def get_app_info(self) -> dict:
+        r = self.call_noco(path="meta/nocodb/info")
+        self.__app_info = r.json()
+        return r.json()
+
+    def is_cloud(self) -> bool:
+        if hasattr(self,"__app_info"):
+            return self.__app_info["isCloud"]
+        else:
+            return self.get_app_info()["isCloud"]
 
