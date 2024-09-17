@@ -1,7 +1,7 @@
 from nocodb.Record import Record
 from nocodb.Column import Column
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 if TYPE_CHECKING:
     from nocodb.Base import Base
 
@@ -26,7 +26,7 @@ class Table:
             path=f"tables/{self.table_id}/records/count")
         return r.json()["count"]
 
-    def get_columns(self, include_system: bool = True) -> list[Column]:
+    def get_columns(self, include_system: bool = True) -> List[Column]:
         r = self.noco_db.call_noco(
             path=f"meta/tables/{self.table_id}")
         cols = [Column(**f) for f in r.json()["columns"]]
@@ -73,7 +73,7 @@ class Table:
                                    method="DELETE")
         return r.json()
 
-    def get_records(self, params: dict = None) -> list[Record]:
+    def get_records(self, params: dict = None) -> List[Record]:
         if params is None:
             params = {}
 
@@ -107,7 +107,7 @@ class Table:
             path=f"tables/{self.table_id}/records/{record_id}")
         return Record(self, **r.json())
 
-    def get_records_by_field_value(self, field: str, value) -> list[Record]:
+    def get_records_by_field_value(self, field: str, value) -> List[Record]:
         return self.get_records(params={"where": f"({field},eq,{value})"})
 
     def create_record(self, **kwargs) -> Record:
@@ -116,7 +116,7 @@ class Table:
                                    json=kwargs)
         return self.get_record(record_id=r.json()["Id"])
 
-    def create_records(self, records: list[dict]) -> list[Record]:
+    def create_records(self, records: List[dict]) -> List[Record]:
         r = self.noco_db.call_noco(path=f"tables/{self.table_id}/records",
                                    method="POST",
                                    json=records)

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from nocodb.Column import Column
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ class Record:
 
         return r.json()
 
-    def link_records(self, column: Column, link_records: list["Record"]) -> bool:
+    def link_records(self, column: Column, link_records: List["Record"]) -> bool:
         path = (f"tables/{self.table.table_id}/links/" +
                 f"{column.column_id}/records/{self.record_id}")
         r = self.noco_db.call_noco(path=path,

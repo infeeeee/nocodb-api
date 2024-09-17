@@ -1,3 +1,6 @@
+from typing import List
+
+
 class Column:
     def __init__(self, **kwargs) -> None:
         self.title = kwargs["title"]
@@ -7,7 +10,7 @@ class Column:
         self.metadata = kwargs
 
     @staticmethod
-    def get_id_metadata() -> list[dict]:
+    def get_id_metadata() -> List[dict]:
         return [
             {'title': 'Id', 'column_name': 'id', 'uidt': 'ID',
              'dt': 'int4', 'np': '11', 'ns': '0', 'clen': None,

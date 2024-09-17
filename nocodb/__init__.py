@@ -1,3 +1,4 @@
+from typing import List
 from nocodb.Base import Base
 import requests
 from urllib.parse import urlsplit, urljoin
@@ -68,7 +69,7 @@ class NocoDB:
         return r
 
 
-    def get_bases(self) -> list[Base]:
+    def get_bases(self) -> List[Base]:
         r = self.call_noco(path="meta/bases")
         return [Base(noco_db=self, **f) for f in r.json()["list"]]
 

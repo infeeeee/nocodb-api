@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 if TYPE_CHECKING:
     from nocodb import NocoDB
 
@@ -45,7 +45,7 @@ class Base:
         r = self.noco_db.call_noco(path=f"meta/bases/{self.base_id}/info")
         return r.json()
 
-    def get_tables(self) -> list[Table]:
+    def get_tables(self) -> List[Table]:
         r = self.noco_db.call_noco(path=f"meta/bases/{self.base_id}/tables")
         return [Table(base=self, **t) for t in r.json()["list"]]
 
@@ -61,7 +61,7 @@ class Base:
             raise Exception(f"Table with name {title} not found!")
 
     def create_table(self, table_name: str,
-                      columns: list[dict] = None, add_default_columns: bool = True,
+                      columns: List[dict] = None, add_default_columns: bool = True,
                      **kwargs) -> Table:
         if columns is None:
             columns = []
