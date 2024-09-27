@@ -27,6 +27,8 @@ python -m venv .venv
 
 ### Tests in Docker
 
+Create a file `test_config.json` with the parameters, or change the Environment Variables in `tests/Dockerfile`, than run:
+
 ```shell
 docker run --rm -it $(docker build -q -f tests/Dockerfile .)
 ```

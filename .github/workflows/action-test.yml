@@ -2,11 +2,18 @@ on:
   workflow_call:
     inputs:
       python-version:
+        description: 'Python version to run test on'
         required: true
         type: string
       environment:
+        description: 'Environment to read envvars from'
         required: true
         type: string
+      timeout:
+        description: 'Time to wait between running tests in seconds'
+        required: false
+        type: string
+        default: '30'
     secrets:
       NOCO_URL:
         required: true
@@ -39,3 +46,4 @@ jobs:
           NOCO_URL: ${{ secrets.NOCO_URL }}
           NOCO_API_KEY: ${{ secrets.NOCO_API_KEY }}
           NOCO_BASE_ID: ${{ secrets.NOCO_BASE_ID }}
+          TIMEOUT: ${{ inputs.environment }}

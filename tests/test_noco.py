@@ -17,7 +17,8 @@ logging.getLogger('nocodb').setLevel(level=logging.DEBUG)
 CONFIG = {
     "NOCO_URL": "https://app.nocodb.com",
     "NOCO_API_KEY": "",
-    "NOCO_BASE_ID": ""
+    "NOCO_BASE_ID": "",
+    "TIMEOUT": "30"
 }
 
 
@@ -46,11 +47,7 @@ class TestData:
 
     @classmethod
     def setUpClass(cls) -> None:
-        sleep(10)
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        sleep(10)
+        sleep(int(CONFIG["TIMEOUT"]))
 
     @classmethod
     def get_new_table(cls) -> Table:
