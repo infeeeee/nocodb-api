@@ -1,5 +1,5 @@
 [project]
-name = "py-nocodb"
+name = "nocodb-api"
 version = "0.0.1"
 description = "Python client for NocoDB API v2"
 readme = "README.md"
