@@ -46,4 +46,4 @@ jobs:
           NOCO_URL: ${{ secrets.NOCO_URL }}
           NOCO_API_KEY: ${{ secrets.NOCO_API_KEY }}
           NOCO_BASE_ID: ${{ secrets.NOCO_BASE_ID }}
-          TIMEOUT: ${{ inputs.environment }}
+          TIMEOUT: ${{ inputs.timeout }}
