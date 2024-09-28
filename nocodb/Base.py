@@ -8,8 +8,8 @@ from nocodb.Column import Column
 from nocodb.Table import Table
 
 import logging
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+_logger = logging.getLogger(__name__)
+_logger.addHandler(logging.NullHandler())
 
 
 class Base:
@@ -33,14 +33,14 @@ class Base:
             "excludeData": exclude_data,
             "excludeViews": exclude_views,
             "excludeHooks": exclude_hooks})
-        logger.debug(f"Base {self.title} duplicated")
+        _logger.info(f"Base {self.title} duplicated")
 
         return self.noco_db.get_base(base_id=r.json()["base_id"])
 
     def delete(self) -> bool:
         r = self.noco_db.call_noco(path=f"meta/bases/{self.base_id}",
                                    method="DELETE")
-        logger.debug(f"Base {self.title} deleted")
+        _logger.info(f"Base {self.title} deleted")
         return r.json()
 
     def update(self, **kwargs) -> None:
@@ -55,7 +55,7 @@ class Base:
     def get_tables(self) -> list[Table]:
         r = self.noco_db.call_noco(path=f"meta/bases/{self.base_id}/tables")
         tables = [Table(base=self, **t) for t in r.json()["list"]]
-        logger.debug(f"Tables in base {self.title}: {[t.title for t in tables]}")
+        _logger.debug(f"Tables in base {self.title}: {[t.title for t in tables]}")
         return tables
 
     def get_table(self, table_id: str) -> Table:

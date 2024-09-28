@@ -8,8 +8,8 @@ if TYPE_CHECKING:
     from nocodb.Base import Base
 
 import logging
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+_logger = logging.getLogger(__name__)
+_logger.addHandler(logging.NullHandler())
 
 
 class Table:
@@ -71,7 +71,7 @@ class Table:
                                    method="POST",
                                    json={"excludeData": exclude_data,
                                          "excludeViews": exclude_views})
-        logger.debug(f"Table {self.title} duplicated")
+        _logger.info(f"Table {self.title} duplicated")
         return
 
         # Bug in noco API, wrong Id response
@@ -91,7 +91,7 @@ class Table:
     def delete(self) -> bool:
         r = self.noco_db.call_noco(path=f"meta/tables/{self.table_id}",
                                    method="DELETE")
-        logger.debug(f"Table {self.title} deleted")
+        _logger.info(f"Table {self.title} deleted")
         return r.json()
 
     def get_records(self, params: dict | None = None) -> list[Record]:

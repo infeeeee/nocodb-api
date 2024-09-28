@@ -15,12 +15,14 @@ classifiers = [
 
 dependencies = ["requests"]
 
+[project.optional-dependencies]
+doc = ["pdoc"]
 
 [project.urls]
 homepage = "https://github.com/infeeeee/py-nocodb"
 documentation = "https://github.com/infeeeee/py-nocodb"
 repository = "https://github.com/infeeeee/py-nocodb"
-changelog = "https://github.com/infeeeee/py-nocodb"
+changelog = "https://github.com/infeeeee/py-nocodb/releases"
 
 
 [build-system]

@@ -1,13 +1,14 @@
 from __future__ import annotations
 import requests
 from urllib.parse import urlsplit, urljoin
-import logging
 
 from nocodb.Base import Base
 from nocodb.Column import Column
 
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+
+import logging
+_logger = logging.getLogger(__name__)
+_logger.addHandler(logging.NullHandler())
 
 
 API_PATH_BASE = "api/v2"
@@ -55,19 +56,18 @@ class NocoDB:
         headers = {"xc-token": self.api_key}
         url = urljoin(self.api_url, path)
 
-        logger.debug(f"Calling {method} {url} {kwargs}")
+        _logger.debug(f"Calling {method} {url} {kwargs}")
         r = requests.request(method, url, headers=headers, **kwargs)
 
-        logger.debug(r.status_code)
+        _logger.debug(r.status_code)
 
         if r.status_code >= 400:
             raise Exception(f"Server response: {r.status_code} - {r.text}")
 
         if r.status_code != 200:
-            logger.warning(r.text)
+            _logger.warning(r.text)
 
         return r
-
 
     def get_bases(self) -> list[Base]:
         r = self.call_noco(path="meta/bases")
@@ -83,7 +83,7 @@ class NocoDB:
         except StopIteration:
             raise Exception(f"Base with name {title} not found!")
 
-    def create_base(self, title:str, **kwargs) -> Base:
+    def create_base(self, title: str, **kwargs) -> Base:
         kwargs["title"] = title
 
         r = self.call_noco(path="meta/bases",
@@ -91,11 +91,9 @@ class NocoDB:
                            json=kwargs)
         return self.get_base(base_id=r.json()["id"])
 
-
-    def get_column(self, column_id:str) -> Column:
+    def get_column(self, column_id: str) -> Column:
         r = self.call_noco(path=f"meta/columns/{column_id}")
         return Column(**r.json())
-
 
     def get_app_info(self) -> dict:
         r = self.call_noco(path="meta/nocodb/info")
@@ -103,7 +101,7 @@ class NocoDB:
         return r.json()
 
     def is_cloud(self) -> bool:
-        if hasattr(self,"__app_info"):
+        if hasattr(self, "__app_info"):
             return self.__app_info["isCloud"]
         else:
             return self.get_app_info()["isCloud"]
