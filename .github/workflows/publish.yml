@@ -1,0 +1,83 @@
+name: "Build, release and publish"
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    uses: ./.github/workflows/action-test.yml
+    with:
+      python-version: "3.8"
+      environment: "cloud"
+    secrets:
+      NOCO_URL: ${{ secrets.NOCO_URL }}
+      NOCO_API_KEY: ${{ secrets.NOCO_API_KEY }}
+      NOCO_BASE_ID: ${{ secrets.NOCO_BASE_ID }}
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Build release distributions
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+          python -m build
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-dists
+          path: dist/
+
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    needs: build
+
+    permissions:
+      id-token: write
+
+    environment:
+      name: pypi
+
+    steps:
+      - name: Retrieve release distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: release-dists
+          path: dist/
+
+      - name: Publish release distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: publish
+    steps:
+      - name: Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{steps.github_release.outputs.changelog}}
