@@ -54,14 +54,15 @@ class Base:
 
     def get_tables(self) -> list[Table]:
         r = self.noco_db.call_noco(path=f"meta/bases/{self.base_id}/tables")
-        tables = [Table(base=self, **t) for t in r.json()["list"]]
-        _logger.debug(f"Tables in base {self.title}: {[t.title for t in tables]}")
+        tables = [Table(noco_db=self.noco_db, **t) for t in r.json()["list"]]
+        _logger.debug(f"Tables in base {self.title}: "
+                      + str([t.title for t in tables]))
         return tables
 
     def get_table(self, table_id: str) -> Table:
         r = self.noco_db.call_noco(
             path=f"meta/tables/{table_id}")
-        return Table(base=self, **r.json())
+        return Table(noco_db=self.noco_db, **r.json())
 
     def get_table_by_title(self, title: str) -> Table:
         try:

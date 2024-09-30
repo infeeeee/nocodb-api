@@ -1,11 +1,13 @@
 from __future__ import annotations
 import re
 from nocodb.Record import Record
-from nocodb.Column import Column
+from nocodb.Column import Column, DataType
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from nocodb.Base import Base
+    from nocodb import NocoDB
+
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -13,10 +15,10 @@ _logger.addHandler(logging.NullHandler())
 
 
 class Table:
-    def __init__(self, base: "Base", **kwargs) -> None:
+    def __init__(self, noco_db: "NocoDB", **kwargs) -> None:
 
-        self.base = base
-        self.noco_db = base.noco_db
+        self.noco_db = noco_db
+        self.base_id = kwargs["base_id"]
 
         self.table_id = kwargs["id"]
         self.title = kwargs["title"]
@@ -32,10 +34,10 @@ class Table:
             path=f"tables/{self.table_id}/records/count")
         return r.json()["count"]
 
-    def get_columns(self, include_system: bool = True) -> list[Column]:
+    def get_columns(self, include_system: bool = False) -> list[Column]:
         r = self.noco_db.call_noco(
             path=f"meta/tables/{self.table_id}")
-        cols = [Column(**f) for f in r.json()["columns"]]
+        cols = [Column(noco_db=self.noco_db, **f) for f in r.json()["columns"]]
         if include_system:
             return cols
         else:
@@ -53,11 +55,11 @@ class Table:
             raise Exception(f"Column with title {title} not found!")
 
     def create_column(self, column_name: str,
-                      title: str, uidt: str = "SingleLineText",
+                      title: str, data_type: DataType = Column.DataType.SingleLineText,
                       **kwargs) -> Column:
         kwargs["column_name"] = column_name
         kwargs["title"] = title
-        kwargs["uidt"] = uidt
+        kwargs["uidt"] = str(data_type)
 
         r = self.noco_db.call_noco(path=f"meta/tables/{self.table_id}/columns",
                                    method="POST",
@@ -67,7 +69,7 @@ class Table:
     def duplicate(self,
                   exclude_data: bool = True,
                   exclude_views: bool = True) -> None:
-        r = self.noco_db.call_noco(path=f"meta/duplicate/{self.base.base_id}/table/{self.table_id}",
+        r = self.noco_db.call_noco(path=f"meta/duplicate/{self.base_id}/table/{self.table_id}",
                                    method="POST",
                                    json={"excludeData": exclude_data,
                                          "excludeViews": exclude_views})
@@ -78,7 +80,7 @@ class Table:
 
     def get_duplicates(self) -> list["Table"]:
         duplicates = {}
-        for t in self.base.get_tables():
+        for t in self.get_base().get_tables():
             if re.match(f"^{self.title} copy(_\\d+)?$", t.title):
                 nr = re.findall("_(\\d+)", t.title)
                 if nr:
@@ -144,3 +146,6 @@ class Table:
                                    json=records)
         ids_string = ','.join([str(d["Id"]) for d in r.json()])
         return self.get_records(params={"where": f"(Id,in,{ids_string})"})
+
+    def get_base(self) -> Base:
+        return self.noco_db.get_base(self.base_id)

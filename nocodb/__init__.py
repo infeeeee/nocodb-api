@@ -4,6 +4,7 @@ from urllib.parse import urlsplit, urljoin
 
 from nocodb.Base import Base
 from nocodb.Column import Column
+from nocodb.Table import Table
 
 
 import logging
@@ -91,9 +92,13 @@ class NocoDB:
                            json=kwargs)
         return self.get_base(base_id=r.json()["id"])
 
+    def get_table(self, table_id: str) -> Table:
+        r = self.call_noco(path=f"meta/tables/{table_id}")
+        return Table(noco_db=self, **r.json())
+
     def get_column(self, column_id: str) -> Column:
         r = self.call_noco(path=f"meta/columns/{column_id}")
-        return Column(**r.json())
+        return Column(noco_db=self, **r.json())
 
     def get_app_info(self) -> dict:
         r = self.call_noco(path="meta/nocodb/info")
