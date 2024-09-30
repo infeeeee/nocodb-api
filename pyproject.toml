@@ -1,6 +1,6 @@
 [project]
 name = "nocodb-api"
-version = "0.0.1"
+version = "0.0.2"
 description = "Python client for NocoDB API v2"
 readme = "README.md"
 requires-python = ">=3.8"
