@@ -19,10 +19,10 @@ dependencies = ["requests"]
 doc = ["pdoc"]
 
 [project.urls]
-homepage = "https://github.com/infeeeee/py-nocodb"
-documentation = "https://github.com/infeeeee/py-nocodb"
-repository = "https://github.com/infeeeee/py-nocodb"
-changelog = "https://github.com/infeeeee/py-nocodb/releases"
+homepage = "https://github.com/infeeeee/nocodb-api"
+documentation = "https://github.com/infeeeee/nocodb-api"
+repository = "https://github.com/infeeeee/nocodb-api"
+changelog = "https://github.com/infeeeee/nocodb-api/releases"
 
 
 [build-system]
