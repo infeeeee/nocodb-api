@@ -1,4 +1,4 @@
-# py-nocodb
+# nocodb-api
 
 Python client for NocoDB API v2
 
@@ -14,7 +14,7 @@ pip install nocodb-api
 Install from Github:
 
 ```shell
-pip install "nocodb-api@git+https://github.com/infeeeee/py-nocodb"
+pip install "nocodb-api@git+https://github.com/infeeeee/nocodb-api"
 ```
 
 ## Quickstart
