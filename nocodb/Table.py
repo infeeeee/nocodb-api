@@ -141,11 +141,15 @@ class Table:
         return self.get_record(record_id=r.json()["Id"])
 
     def create_records(self, records: list[dict]) -> list[Record]:
+        ids_string = self.batch_create_records(records)
+        return self.get_records(params={"where": f"(Id,in,{ids_string})"})
+
+    def batch_create_records(self, records):
         r = self.noco_db.call_noco(path=f"tables/{self.table_id}/records",
                                    method="POST",
                                    json=records)
         ids_string = ','.join([str(d["Id"]) for d in r.json()])
-        return self.get_records(params={"where": f"(Id,in,{ids_string})"})
+        return ids_string
 
     def get_base(self) -> Base:
         return self.noco_db.get_base(self.base_id)
