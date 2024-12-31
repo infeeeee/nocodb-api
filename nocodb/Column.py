@@ -57,6 +57,7 @@ class Column:
                 "ai": True,
                 "dtx": "integer",
                 "dtxp": "11",
+                "system": True
             },
             {
                 "title": "Title",

@@ -1,6 +1,8 @@
 from __future__ import annotations
 import requests
 from urllib.parse import urlsplit, urljoin
+from pathlib import Path
+import mimetypes
 
 from nocodb.Base import Base
 from nocodb.Column import Column
@@ -34,25 +36,6 @@ class NocoDB:
             url = url[:i]
         return urlsplit(url).geturl() + "/"
 
-    def get_file(self, path, encoding: str = "utf-8") -> str:
-        """Get a file from the noco server
-
-        Args:
-            path (_type_): _description_
-            encoding (str, optional): Encoding of the response. Defaults to "utf-8".
-
-        Returns:
-            str: _description_
-
-        About encoding: https://requests.readthedocs.io/en/latest/user/quickstart/#response-content
-        """
-        headers = {"xc-token": self.api_key}
-        url = urljoin(self.base_url, path)
-        r = requests.get(url=url, headers=headers)
-        r.encoding = encoding
-
-        return r.text
-
     def call_noco(self, path: str, method: str = "GET", **kwargs) -> requests.Response:
         headers = {"xc-token": self.api_key}
         url = urljoin(self.api_url, path)
@@ -69,6 +52,39 @@ class NocoDB:
             _logger.warning(r.text)
 
         return r
+
+    def get_file(self, path, encoding: str = "utf-8") -> str:
+        """Get a file from the noco server
+
+        Args:
+            path (_type_): _description_
+            encoding (str, optional): Encoding of the response. Defaults to "utf-8".
+
+        Returns:
+            str: _description_
+
+        About encoding: https://requests.readthedocs.io/en/latest/user/quickstart/#response-content
+        """
+
+        r = self.call_noco(path=path)
+        r.encoding = encoding
+
+        return r.text
+
+    def upload_file(self, filepath: Path, mimetype: str = "") -> dict:
+        if not mimetype:
+            mt = mimetypes.guess_type(filepath, strict=False)
+            if mt and mt[0]:
+                mimetype = mt[0]
+            else:
+                mimetype = "text/plain"
+
+        r = self.call_noco(
+            path="storage/upload",
+            method="POST",
+            files={"file": (filepath.name, open(filepath, "rb"), mimetype)},
+        )
+        return r.json()[0]
 
     def get_bases(self) -> list[Base]:
         r = self.call_noco(path="meta/bases")

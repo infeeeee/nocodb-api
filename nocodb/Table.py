@@ -32,42 +32,12 @@ class Table:
         return {k: v for k, v in m.items() if not k in extra_keys}
 
     def get_number_of_records(self) -> int:
-        r = self.noco_db.call_noco(path=f"tables/{self.table_id}/records/count")
+        r = self.noco_db.call_noco(
+            path=f"tables/{self.table_id}/records/count")
         return r.json()["count"]
 
-    def get_columns(self, include_system: bool = False) -> list[Column]:
-        r = self.noco_db.call_noco(path=f"meta/tables/{self.table_id}")
-        cols = [Column(noco_db=self.noco_db, **f) for f in r.json()["columns"]]
-        if include_system:
-            return cols
-        else:
-            return [c for c in cols if not c.system and not c.primary_key]
-
-    def get_columns_hash(self) -> str:
-        r = self.noco_db.call_noco(path=f"meta/tables/{self.table_id}/columns/hash")
-        return r.json()["hash"]
-
-    def get_column_by_title(self, title: str) -> Column:
-        try:
-            return next((r for r in self.get_columns() if r.title == title))
-        except StopIteration:
-            raise Exception(f"Column with title {title} not found!")
-
-    def create_column(
-        self,
-        column_name: str,
-        title: str,
-        data_type: DataType = Column.DataType.SingleLineText,
-        **kwargs,
-    ) -> Column:
-        kwargs["column_name"] = column_name
-        kwargs["title"] = title
-        kwargs["uidt"] = str(data_type)
-
-        r = self.noco_db.call_noco(
-            path=f"meta/tables/{self.table_id}/columns", method="POST", json=kwargs
-        )
-        return self.get_column_by_title(title=title)
+    def get_base(self) -> Base:
+        return self.noco_db.get_base(self.base_id)
 
     def duplicate(self, exclude_data: bool = True, exclude_views: bool = True) -> None:
         r = self.noco_db.call_noco(
@@ -93,9 +63,45 @@ class Table:
         return list(dict(sorted(duplicates.items(), reverse=True)).values())
 
     def delete(self) -> bool:
-        r = self.noco_db.call_noco(path=f"meta/tables/{self.table_id}", method="DELETE")
+        r = self.noco_db.call_noco(
+            path=f"meta/tables/{self.table_id}", method="DELETE")
         _logger.info(f"Table {self.title} deleted")
         return r.json()
+
+    def get_columns(self, include_system: bool = False) -> list[Column]:
+        r = self.noco_db.call_noco(path=f"meta/tables/{self.table_id}")
+        cols = [Column(noco_db=self.noco_db, **f) for f in r.json()["columns"]]
+        if include_system:
+            return cols
+        else:
+            return [c for c in cols if not c.system]
+
+    def get_columns_hash(self) -> str:
+        r = self.noco_db.call_noco(
+            path=f"meta/tables/{self.table_id}/columns/hash")
+        return r.json()["hash"]
+
+    def get_column_by_title(self, title: str) -> Column:
+        try:
+            return next((r for r in self.get_columns() if r.title == title))
+        except StopIteration:
+            raise Exception(f"Column with title {title} not found!")
+
+    def create_column(
+        self,
+        column_name: str,
+        title: str,
+        data_type: DataType = Column.DataType.SingleLineText,
+        **kwargs,
+    ) -> Column:
+        kwargs["column_name"] = column_name
+        kwargs["title"] = title
+        kwargs["uidt"] = str(data_type)
+
+        r = self.noco_db.call_noco(
+            path=f"meta/tables/{self.table_id}/columns", method="POST", json=kwargs
+        )
+        return self.get_column_by_title(title=title)
 
     def get_records(self, params: dict | None = None) -> list[Record]:
         params = params or {}
@@ -128,8 +134,13 @@ class Table:
         return records
 
     def get_record(self, record_id: int) -> Record:
-        r = self.noco_db.call_noco(path=f"tables/{self.table_id}/records/{record_id}")
+        r = self.noco_db.call_noco(
+            path=f"tables/{self.table_id}/records/{record_id}")
         return Record(self, **r.json())
+
+    def get_records_by_id(self, record_ids: list[int]) -> list[Record]:
+        ids_string = ",".join(map(str, record_ids))
+        return self.get_records(params={"where": f"(Id,in,{ids_string})"})
 
     def get_records_by_field_value(self, field: str, value) -> list[Record]:
         return self.get_records(params={"where": f"({field},eq,{value})"})
@@ -144,26 +155,32 @@ class Table:
         r = self.noco_db.call_noco(
             path=f"tables/{self.table_id}/records", method="POST", json=records
         )
-        ids_string = ",".join([str(d["Id"]) for d in r.json()])
-        return self.get_records(params={"where": f"(Id,in,{ids_string})"})
 
-    def get_base(self) -> Base:
-        return self.noco_db.get_base(self.base_id)
+        return self.get_records_by_id([r_id["Id"] for r_id in r.json()])
 
-    def delete_record(self, record_id: int) -> bool:
+    def delete_record(self, record_id: int) -> int:
         r = self.noco_db.call_noco(
             path=f"tables/{self.table_id}/records",
             method="DELETE",
             json={"Id": record_id},
         )
+        return r.json()["Id"]
 
-        return r.json()
+    def delete_records_by_id(self, record_ids: list[int]) -> list[int]:
+        r = self.noco_db.call_noco(
+            path=f"tables/{self.table_id}/records",
+            method="DELETE",
+            json=[{"Id": r_id} for r_id in record_ids]
+        )
+        return [r_id["Id"] for r_id in r.json()]
 
-    def update_record(self, **kwargs) -> None:
+    def delete_records(self, records: list[Record]) -> list[int]:
+        return self.delete_records_by_id([rec.record_id for rec in records])
+
+    def update_records(self, records: list[dict]) -> list[Record]:
         r = self.noco_db.call_noco(
             path=f"tables/{self.table_id}/records",
             method="PATCH",
-            json=kwargs,
+            json=records,
         )
-
-        return r.json()
+        return self.get_records_by_id([r_id["Id"] for r_id in r.json()])
