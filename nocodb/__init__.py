@@ -7,6 +7,7 @@ import mimetypes
 from nocodb.Base import Base
 from nocodb.Column import Column
 from nocodb.Table import Table
+from nocodb.Workspace import Workspace, OSSWorkspace
 
 
 import logging
@@ -18,7 +19,6 @@ API_PATH_BASE = "api/v2"
 
 
 class NocoDB:
-    __app_info: dict
 
     def __init__(self,
                  url: str,
@@ -28,6 +28,20 @@ class NocoDB:
         self.api_key = api_key
         self.base_url = self._get_base_url(url)
         self.api_url = urljoin(self.base_url, API_PATH_BASE) + "/"
+
+        self._app_info = {}
+        self._workspaces: list[Workspace] = []
+
+    @property
+    def app_info(self):
+        if not self._app_info:
+            r = self.call_noco(path="meta/nocodb/info")
+            self._app_info = r.json()
+        return self._app_info
+
+    @property
+    def is_cloud(self):
+        return self.app_info["isCloud"]
 
     @staticmethod
     def _get_base_url(url) -> str:
@@ -86,9 +100,21 @@ class NocoDB:
         )
         return r.json()[0]
 
+    def get_workspaces(self) -> list[Workspace]:
+        if self.is_cloud:
+            r = self.call_noco(path="meta/workspaces")
+            return [Workspace(noco_db=self, **f)
+                    for f in r.json()["list"]]
+        else:
+            return [OSSWorkspace(noco_db=self)]
+
+    def get_workspace(self, workspace_id: str) -> Workspace:
+        r = self.call_noco(path=f"meta/workspaces/{workspace_id}")
+        return Workspace(noco_db=self, **r.json())
+
     def get_bases(self) -> list[Base]:
-        r = self.call_noco(path="meta/bases")
-        return [Base(noco_db=self, **f) for f in r.json()["list"]]
+        bases = sum([w.get_bases() for w in self.get_workspaces()], [])
+        return bases
 
     def get_base(self, base_id: str) -> Base:
         r = self.call_noco(path=f"meta/bases/{base_id}")
@@ -101,12 +127,9 @@ class NocoDB:
             raise Exception(f"Base with name {title} not found!")
 
     def create_base(self, title: str, **kwargs) -> Base:
-        kwargs["title"] = title
-
-        r = self.call_noco(path="meta/bases",
-                           method="POST",
-                           json=kwargs)
-        return self.get_base(base_id=r.json()["id"])
+        if len(self.get_workspaces()) > 1:
+            raise Exception("Create base from Workspace instead!")
+        return self.get_workspaces()[0].create_base(title=title, **kwargs)
 
     def get_table(self, table_id: str) -> Table:
         r = self.call_noco(path=f"meta/tables/{table_id}")
@@ -115,14 +138,3 @@ class NocoDB:
     def get_column(self, column_id: str) -> Column:
         r = self.call_noco(path=f"meta/columns/{column_id}")
         return Column(noco_db=self, **r.json())
-
-    def get_app_info(self) -> dict:
-        r = self.call_noco(path="meta/nocodb/info")
-        self.__app_info = r.json()
-        return r.json()
-
-    def is_cloud(self) -> bool:
-        if hasattr(self, "__app_info"):
-            return self.__app_info["isCloud"]
-        else:
-            return self.get_app_info()["isCloud"]

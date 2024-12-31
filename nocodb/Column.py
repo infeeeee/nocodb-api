@@ -40,41 +40,20 @@ class Column:
             raise Exception("Not linked column!")
 
     @staticmethod
-    def get_id_metadata() -> list[dict]:
+    def get_default_columns() -> list[dict]:
         return [
             {
                 "title": "Id",
                 "column_name": "id",
                 "uidt": str(Column.DataType.ID),
-                "dt": "int4",
-                "np": "11",
-                "ns": "0",
-                "clen": None,
                 "pk": True,
-                "pv": None,
-                "rqd": True,
-                "ct": "int(11)",
-                "ai": True,
                 "dtx": "integer",
-                "dtxp": "11",
-                "system": True
             },
             {
                 "title": "Title",
                 "column_name": "title",
                 "uidt": str(Column.DataType.SingleLineText),
-                "dt": "character varying",
-                "np": None,
-                "ns": None,
-                "clen": "45",
-                "pk": False,
-                "pv": True,
-                "rqd": False,
-                "ct": "varchar(45)",
-                "ai": False,
-                "dtx": "specificType",
-                "dtxp": "45",
-            },
+            }
         ]
 
     class DataType:

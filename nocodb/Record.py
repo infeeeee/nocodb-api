@@ -14,7 +14,7 @@ class Record:
         self.noco_db = table.noco_db
 
         self.record_id = kwargs["Id"]
-        self.metadata = kwargs
+        self.values = kwargs
 
     def link_record(self, column: Column, link_record: "Record") -> bool:
         path = (
@@ -79,6 +79,7 @@ class Record:
             path=f"tables/{self.table.table_id}/records/{self.record_id}",
             params={"fields": field_str}
         )
+        self.values.update(r.json())
         return r.json()
 
     def get_attachments(self, field: str, encoding: str = "utf-8") -> list[str]:

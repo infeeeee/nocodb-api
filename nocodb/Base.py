@@ -16,10 +16,13 @@ _logger.addHandler(logging.NullHandler())
 
 class Base:
     def __init__(self, noco_db: "NocoDB", **kwargs) -> None:
+        defaults = {"fk_workspace_id": ""}
+        kwargs = {**defaults, **kwargs}
 
         self.noco_db = noco_db
         self.base_id = kwargs["id"]
         self.title = kwargs["title"]
+        self.workspace_id = kwargs["fk_workspace_id"]
         self.metadata = kwargs
 
     def duplicate(
@@ -43,7 +46,8 @@ class Base:
         return self.noco_db.get_base(base_id=r.json()["base_id"])
 
     def delete(self) -> bool:
-        r = self.noco_db.call_noco(path=f"meta/bases/{self.base_id}", method="DELETE")
+        r = self.noco_db.call_noco(
+            path=f"meta/bases/{self.base_id}", method="DELETE")
         _logger.info(f"Base {self.title} deleted")
         return r.json()
 
@@ -59,12 +63,9 @@ class Base:
     def get_tables(self) -> list[Table]:
         r = self.noco_db.call_noco(path=f"meta/bases/{self.base_id}/tables")
         tables = [Table(noco_db=self.noco_db, **t) for t in r.json()["list"]]
-        _logger.debug(f"Tables in base {self.title}: " + str([t.title for t in tables]))
+        _logger.debug(f"Tables in base {
+                      self.title}: " + str([t.title for t in tables]))
         return tables
-
-    def get_table(self, table_id: str) -> Table:
-        r = self.noco_db.call_noco(path=f"meta/tables/{table_id}")
-        return Table(noco_db=self.noco_db, **r.json())
 
     def get_table_by_title(self, title: str) -> Table:
         try:
@@ -75,21 +76,17 @@ class Base:
     def create_table(
         self,
         table_name: str,
-        columns: list[dict] | None = None,
         add_default_columns: bool = True,
         **kwargs,
     ) -> Table:
-        kwargs["table_name"] = table_name
-
-        if not columns:
-            kwargs["columns"] = Column.get_id_metadata()
-        elif add_default_columns:
-            columns.extend(Column.get_id_metadata())
-            kwargs["columns"] = columns
-        else:
-            kwargs["columns"] = columns
+        if "columns" in kwargs and add_default_columns:
+            kwargs["columns"].extend(Column.get_default_columns())
+            
+        defaults = {"table_name": table_name,
+                    "columns": Column.get_default_columns()}
+        kwargs = {**defaults, **kwargs}
 
         r = self.noco_db.call_noco(
             path=f"meta/bases/{self.base_id}/tables", method="POST", json=kwargs
         )
-        return self.get_table(table_id=r.json()["id"])
+        return self.noco_db.get_table(table_id=r.json()["id"])
