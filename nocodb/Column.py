@@ -28,16 +28,32 @@ class Column:
         self.primary_key = bool(kwargs["pk"])
 
         self.data_type = Column.DataType.get_data_type(kwargs["uidt"])
+
+        self.col_options = kwargs.get("colOptions", {})
+        self.formula_raw = self.col_options.get("formula_raw", None)
+        self.linked_table_id = self.col_options.get(
+            "fk_related_model_id", None)
+
         self.metadata = kwargs
 
-        if "colOptions" in kwargs and "fk_related_model_id" in kwargs["colOptions"]:
-            self.linked_table_id = kwargs["colOptions"]["fk_related_model_id"]
-
     def get_linked_table(self) -> Table:
-        if hasattr(self, "linked_table_id"):
+        if self.linked_table_id:
             return self.noco_db.get_table(self.linked_table_id)
         else:
             raise Exception("Not linked column!")
+
+    def update(self, **kwargs) -> Column:
+        r = self.noco_db.call_noco(
+            path=f"meta/columns/{self.column_id}",
+            method="PATCH",
+            json=kwargs,
+        )
+        return self.noco_db.get_column(self.column_id)
+
+    def delete(self) -> bool:
+        r = self.noco_db.call_noco(
+            path=f"meta/columns/{self.column_id}", method="DELETE")
+        return r.json()
 
     @staticmethod
     def get_default_columns() -> list[dict]:

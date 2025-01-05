@@ -57,7 +57,7 @@ class Record:
         else:
             record_ids = [r.json()["Id"]]
 
-        linked_table = self.noco_db.get_table(column.linked_table_id)
+        linked_table = column.get_linked_table()
         return linked_table.get_records_by_id(record_ids)
 
     def get_value(self, field: str) -> Any:

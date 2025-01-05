@@ -94,9 +94,10 @@ class Table:
         data_type: DataType = Column.DataType.SingleLineText,
         **kwargs,
     ) -> Column:
-        kwargs["column_name"] = column_name
-        kwargs["title"] = title
-        kwargs["uidt"] = str(data_type)
+
+        defaults = {"column_name": column_name,
+                    "title": title, "uidt": str(data_type)}
+        kwargs = {**defaults, **kwargs}
 
         r = self.noco_db.call_noco(
             path=f"meta/tables/{self.table_id}/columns", method="POST", json=kwargs
