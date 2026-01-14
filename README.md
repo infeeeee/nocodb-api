@@ -1,3 +1,7 @@
+⚠️ PROJECT ARCHIVED ⚠️
+
+As NocoDB switched from a perfectly fine AGPL license to a non-free license, I won't use it in the future.
+
 # nocodb-api
 
 Python client for NocoDB API v2
